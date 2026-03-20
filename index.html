@@ -15,7 +15,6 @@
       --gold: #f5a623;
       --white: #ffffff;
       --dim: rgba(255,255,255,0.5);
-      --radius: 16px;
     }
 
     html, body {
@@ -28,14 +27,12 @@
     }
 
     #app {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      height: 100%;
-      padding: 32px 20px 40px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: space-between;
+      height: 100%; padding: 32px 20px 40px;
     }
 
+    /* Header */
     .header { text-align: center; width: 100%; }
     .header h1 {
       font-size: 28px; font-weight: 700; letter-spacing: 4px;
@@ -43,6 +40,7 @@
     }
     .header .subtitle { font-size: 13px; color: var(--dim); margin-top: 4px; letter-spacing: 1px; }
 
+    /* Dice count */
     .count-row { display: flex; align-items: center; gap: 16px; }
     .count-label { font-size: 14px; color: var(--dim); }
     .count-btns { display: flex; gap: 8px; }
@@ -58,14 +56,14 @@
       box-shadow: 0 0 12px rgba(233,69,96,0.5);
     }
 
-    /* Cup zone: dice sit underneath, cup overlays on top */
+    /* Cup zone */
     .cup-zone {
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       gap: 20px; flex: 1; width: 100%; position: relative;
     }
 
-    /* Dice area — always in DOM, made visible on reveal */
+    /* Dice area — under cup */
     .dice-area {
       display: flex; flex-wrap: wrap; gap: 12px;
       justify-content: center; min-height: 80px;
@@ -79,8 +77,7 @@
       display: grid;
       grid-template-areas: "a . b" "c e d" "f . g";
       padding: 8px; gap: 3px;
-      opacity: 0;
-      transform: translateY(6px) scale(0.92);
+      opacity: 0; transform: translateY(6px) scale(0.92);
       transition: opacity 0.35s ease, transform 0.35s ease;
     }
     .die.visible { opacity: 1; transform: translateY(0) scale(1); }
@@ -89,52 +86,77 @@
     .dot.wild { background: var(--accent); }
     .dot.red  { background: var(--accent); }
 
-    /* Cup wrapper — overlays dice, draggable upward */
+    /* ── CSS Dice Cup ── */
     .cup-wrapper {
       position: absolute;
-      width: 180px; height: 180px;
+      width: 160px; height: 200px;
       cursor: grab; z-index: 10; touch-action: none;
       transform: translateY(0px); transition: transform 0s;
+      display: flex; flex-direction: column; align-items: center;
     }
     .cup-wrapper.snap-up   { transition: transform 0.32s cubic-bezier(0.22,1,0.36,1); }
     .cup-wrapper.snap-down { transition: transform 0.28s cubic-bezier(0.55,0,1,0.45); }
 
-    .cup {
-      width: 100%; height: 100%; border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #2a4a7f, var(--card));
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 2px 8px rgba(255,255,255,0.1), 0 0 0 2px rgba(255,255,255,0.06);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 64px; position: relative; overflow: hidden;
+    .cup-rim {
+      width: 148px; height: 16px;
+      background: linear-gradient(180deg, #2a5298 0%, #1a3a6e 100%);
+      border-radius: 4px 4px 0 0;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.1);
+      flex-shrink: 0;
     }
-    .cup::after {
-      content: ''; position: absolute; top: 12px; left: 20px;
-      width: 40px; height: 20px; background: rgba(255,255,255,0.08);
-      border-radius: 50%; transform: rotate(-30deg);
+    .cup-body {
+      width: 140px; height: 160px;
+      position: relative;
+      background: linear-gradient(160deg, #1e3d72 0%, #0f2d58 40%, #0a2040 100%);
+      clip-path: polygon(14% 0%, 86% 0%, 100% 100%, 0% 100%);
+      box-shadow: inset -4px 0 12px rgba(0,0,0,0.3), inset 4px 0 8px rgba(255,255,255,0.06);
     }
-    .cup.shaking { animation: shake 0.5s cubic-bezier(0.36,0.07,0.19,0.97); }
+    .cup-body::before {
+      content: '';
+      position: absolute;
+      top: 8px; left: 18%; width: 12%; height: 70%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.13), transparent);
+      border-radius: 6px;
+    }
+    .cup-body::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 10%; right: 10%; height: 30px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.25), transparent);
+    }
+    .cup-base {
+      width: 100%; height: 14px;
+      background: linear-gradient(180deg, #0a2040, #061528);
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+      margin-top: -2px;
+    }
 
-    /* Hint below cup — default and post-roll */
+    .cup-body.shaking { animation: shake 0.5s cubic-bezier(0.36,0.07,0.19,0.97); }
+
+    /* Directional hints */
+    .reveal-hint {
+      position: absolute; bottom: -34px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 13px; letter-spacing: 1px;
+      opacity: 0; pointer-events: none; white-space: nowrap;
+      transition: opacity 0.3s;
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
+    }
+    .reveal-hint.up   { color: var(--gold); --dy: -6px; }
+    .reveal-hint.down { color: var(--dim);  --dy:  6px; }
+    .reveal-hint.visible { opacity: 1; animation: bounceDir 1.2s ease-in-out infinite; }
+    .reveal-hint .arrow { font-size: 18px; }
+
     .cup-hint {
       font-size: 13px; color: var(--dim); letter-spacing: 1px;
       animation: pulse 2s ease-in-out infinite;
       position: relative; z-index: 5;
-      margin-top: 100px;
-      transition: opacity 0.3s;
+      margin-top: 120px; transition: opacity 0.3s;
     }
     .cup-hint.hidden { opacity: 0; pointer-events: none; }
 
-    /* Swipe-up hint on cup after rolling */
-    .reveal-hint {
-      position: absolute; bottom: -40px; left: 50%;
-      transform: translateX(-50%);
-      font-size: 13px; color: var(--gold); letter-spacing: 1px;
-      opacity: 0; pointer-events: none; white-space: nowrap;
-      transition: opacity 0.3s;
-      display: flex; flex-direction: column; align-items: center; gap: 2px;
-    }
-    .reveal-hint.visible { opacity: 1; animation: bounceUp 1.2s ease-in-out infinite; }
-    .reveal-hint .arrow { font-size: 20px; }
-
+    /* Summary */
     .summary {
       background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
       border-radius: 12px; padding: 12px 24px; font-size: 13px; color: var(--dim);
@@ -151,6 +173,7 @@
       color: var(--gold); font-weight: 600; font-size: 13px;
     }
 
+    /* Shake button */
     .shake-btn {
       width: 100%; max-width: 280px; height: 56px; border-radius: 28px;
       border: none; background: linear-gradient(135deg, var(--accent), #c0392b);
@@ -170,27 +193,18 @@
 
     @keyframes shake {
       0%   { transform: rotate(0deg); }
-      15%  { transform: rotate(-12deg) scale(1.05); }
-      30%  { transform: rotate(10deg) scale(0.98); }
-      45%  { transform: rotate(-8deg) scale(1.04); }
-      60%  { transform: rotate(6deg); }
+      15%  { transform: rotate(-12deg) scale(1.05) translateX(-4px); }
+      30%  { transform: rotate(10deg) scale(0.98) translateX(4px); }
+      45%  { transform: rotate(-8deg) scale(1.04) translateX(-3px); }
+      60%  { transform: rotate(6deg) translateX(2px); }
       75%  { transform: rotate(-4deg); }
       90%  { transform: rotate(2deg); }
       100% { transform: rotate(0deg); }
     }
     @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-    @keyframes bounceUp {
+    @keyframes bounceDir {
       0%, 100% { transform: translateX(-50%) translateY(0); }
-      50%       { transform: translateX(-50%) translateY(-6px); }
-    }
-    @keyframes ripple {
-      0%   { transform: scale(0); opacity: 0.4; }
-      100% { transform: scale(4); opacity: 0; }
-    }
-    .ripple {
-      position: absolute; border-radius: 50%; width: 80px; height: 80px;
-      background: rgba(233,69,96,0.3); pointer-events: none;
-      animation: ripple 0.6s ease-out forwards;
+      50%       { transform: translateX(-50%) translateY(var(--dy, -6px)); }
     }
   </style>
 </head>
@@ -213,15 +227,19 @@
   </div>
 
   <div class="cup-zone" id="cupZone">
-    <!-- Dice rendered here, hidden under the cup until revealed -->
     <div class="dice-area" id="diceArea"></div>
 
-    <!-- Cup sits on top, swipe/drag upward to reveal -->
     <div class="cup-wrapper" id="cupWrapper">
-      <div class="cup" id="cup">🎲</div>
-      <div class="reveal-hint" id="revealHint">
+      <div class="cup-rim"></div>
+      <div class="cup-body" id="cupBody"></div>
+      <div class="cup-base"></div>
+      <div class="reveal-hint up" id="hintUp">
         <span class="arrow">↑</span>
         <span>上滑查看</span>
+      </div>
+      <div class="reveal-hint down" id="hintDown">
+        <span class="arrow">↓</span>
+        <span>下滑藏住</span>
       </div>
     </div>
 
@@ -234,11 +252,11 @@
 </div>
 
 <script>
-  let diceCount = 2;
-  let isShaking = false;
+  let diceCount  = 2;
+  let isShaking  = false;
   let isRevealed = false;
-  let hasRolled = false;
-  let lastRoll = [];
+  let hasRolled  = false;
+  let lastRoll   = [];
 
   const LAYOUTS = {
     1: ['e'], 2: ['a','g'], 3: ['a','e','g'],
@@ -250,16 +268,12 @@
   function renderDie(value) {
     const die = document.createElement('div');
     die.className = 'die';
-    LAYOUTS[value].forEach(area => {
-      const dot = document.createElement('div');
-      dot.className = value === 1 ? 'dot wild' : value === 4 ? 'dot red' : 'dot';
-      dot.style.gridArea = area;
-      die.appendChild(dot);
-    });
-    ALL_AREAS.filter(a => !LAYOUTS[value].includes(a)).forEach(area => {
-      const blank = document.createElement('div');
-      blank.style.gridArea = area;
-      die.appendChild(blank);
+    ALL_AREAS.forEach(area => {
+      const el = document.createElement('div');
+      el.style.gridArea = area;
+      if (LAYOUTS[value].includes(area))
+        el.className = value === 1 ? 'dot wild' : value === 4 ? 'dot red' : 'dot';
+      die.appendChild(el);
     });
     return die;
   }
@@ -267,20 +281,13 @@
   function buildSummary(rolls) {
     const counts = {};
     rolls.forEach(v => {
-      if (v === 1) {
-        for (let i = 2; i <= 6; i++) counts[i] = (counts[i]||0) + 1;
-        counts[1] = (counts[1]||0) + 1;
-      } else { counts[v] = (counts[v]||0) + 1; }
+      if (v === 1) { for (let i=2;i<=6;i++) counts[i]=(counts[i]||0)+1; counts[1]=(counts[1]||0)+1; }
+      else counts[v] = (counts[v]||0)+1;
     });
     const tags = [];
-    const wilds = rolls.filter(v => v===1).length;
-    if (wilds > 0) tags.push(`<span class="count-tag">⭐ ×${wilds} 野</span>`);
-    for (let f = 2; f <= 6; f++) {
-      if (counts[f]) {
-        const lbl = ['','','二','三','四','五','六'][f];
-        tags.push(`<span class="count-tag">${lbl} ×${counts[f]}</span>`);
-      }
-    }
+    const wilds = rolls.filter(v=>v===1).length;
+    if (wilds>0) tags.push(`<span class="count-tag">⭐ ×${wilds} 野</span>`);
+    for (let f=2;f<=6;f++) if (counts[f]) tags.push(`<span class="count-tag">${['一','二','三','四','五','六'][f-1]} ×${counts[f]}</span>`);
     return tags.join(' ');
   }
 
@@ -288,138 +295,158 @@
     if (isShaking) return;
     isShaking = true; isRevealed = false; hasRolled = false;
 
-    const cup = document.getElementById('cup');
-    const btn = document.getElementById('shakeBtn');
-    const diceArea = document.getElementById('diceArea');
-    const summary = document.getElementById('summary');
-    const hint = document.getElementById('cupHint');
-    const revHint = document.getElementById('revealHint');
+    const cupBody = document.getElementById('cupBody');
+    const btn     = document.getElementById('shakeBtn');
     const wrapper = document.getElementById('cupWrapper');
 
-    // Reset cup to starting position
     wrapper.classList.remove('snap-up','snap-down');
     wrapper.style.transform = 'translateY(0px)';
+    document.getElementById('hintUp').classList.remove('visible');
+    document.getElementById('hintDown').classList.remove('visible');
+    document.getElementById('cupHint').classList.add('hidden');
+    document.getElementById('summary').classList.add('hidden');
 
-    diceArea.innerHTML = '';
-    summary.classList.add('hidden');
-    revHint.classList.remove('visible');
-    hint.classList.add('hidden');
+    const da = document.getElementById('diceArea');
+    Array.from(da.children).forEach(d => d.classList.remove('visible'));
 
-    cup.classList.remove('shaking');
-    void cup.offsetWidth;
-    cup.classList.add('shaking');
+    cupBody.classList.remove('shaking');
+    void cupBody.offsetWidth;
+    cupBody.classList.add('shaking');
     btn.disabled = true;
-
     if (navigator.vibrate) navigator.vibrate([60,30,60]);
 
     setTimeout(() => {
-      lastRoll = Array.from({length: diceCount}, () => Math.ceil(Math.random()*6));
-      lastRoll.forEach(val => diceArea.appendChild(renderDie(val)));
-
+      lastRoll = Array.from({length:diceCount}, ()=>Math.ceil(Math.random()*6));
+      da.innerHTML = '';
+      lastRoll.forEach(v => da.appendChild(renderDie(v)));
       setTimeout(() => {
-        cup.classList.remove('shaking');
-        isShaking = false; hasRolled = true;
-        btn.disabled = false;
-        revHint.classList.add('visible');
+        cupBody.classList.remove('shaking');
+        isShaking = false; hasRolled = true; btn.disabled = false;
+        document.getElementById('hintUp').classList.add('visible');
         if (navigator.vibrate) navigator.vibrate(40);
       }, 300);
     }, 500);
   }
 
-  const LIFT_THRESHOLD = 60;
-  const LIFT_DISTANCE  = 240;
+  const LIFT_THRESHOLD = 55, LIFT_DISTANCE = 230;
 
   function revealDice() {
     if (isRevealed) return;
     isRevealed = true;
     const wrapper = document.getElementById('cupWrapper');
-    const diceArea = document.getElementById('diceArea');
-    const summary = document.getElementById('summary');
-    const revHint = document.getElementById('revealHint');
-
+    const da = document.getElementById('diceArea');
     wrapper.classList.add('snap-up');
     wrapper.style.transform = `translateY(-${LIFT_DISTANCE}px)`;
-    revHint.classList.remove('visible');
-
-    Array.from(diceArea.children).forEach((die, i) => {
-      setTimeout(() => die.classList.add('visible'), i * 80);
-    });
+    document.getElementById('hintUp').classList.remove('visible');
+    Array.from(da.children).forEach((d,i) => setTimeout(()=>d.classList.add('visible'), i*80));
     setTimeout(() => {
-      summary.innerHTML = buildSummary(lastRoll);
-      summary.classList.remove('hidden');
-    }, lastRoll.length * 80 + 100);
-
+      const s = document.getElementById('summary');
+      s.innerHTML = buildSummary(lastRoll); s.classList.remove('hidden');
+      document.getElementById('hintDown').classList.add('visible');
+    }, lastRoll.length*80+100);
     if (navigator.vibrate) navigator.vibrate([30,20,60]);
   }
 
-  // Touch interaction
+  function hideDice() {
+    if (!isRevealed) return;
+    isRevealed = false;
+    const wrapper = document.getElementById('cupWrapper');
+    const da = document.getElementById('diceArea');
+    Array.from(da.children).forEach(d => d.classList.remove('visible'));
+    document.getElementById('summary').classList.add('hidden');
+    document.getElementById('hintDown').classList.remove('visible');
+    setTimeout(() => {
+      wrapper.classList.remove('snap-up');
+      wrapper.classList.add('snap-down');
+      wrapper.style.transform = 'translateY(0px)';
+      setTimeout(() => document.getElementById('hintUp').classList.add('visible'), 320);
+    }, 150);
+  }
+
+  // Touch
   const wrapper = document.getElementById('cupWrapper');
   let touchStartY = null, dragY = 0;
 
   wrapper.addEventListener('touchstart', e => {
-    if (!hasRolled || isRevealed || isShaking) {
-      if (!isShaking && !hasRolled) doShake();
-      return;
-    }
+    if (isShaking) return;
+    if (!hasRolled) { doShake(); return; }
     touchStartY = e.touches[0].clientY; dragY = 0;
     wrapper.classList.remove('snap-up','snap-down');
-  }, {passive: true});
+  }, {passive:true});
 
   wrapper.addEventListener('touchmove', e => {
-    if (touchStartY === null || isRevealed) return;
-    dragY = Math.max(0, touchStartY - e.touches[0].clientY);
-    wrapper.style.transform = `translateY(-${Math.min(dragY, LIFT_DISTANCE)}px)`;
-  }, {passive: true});
+    if (touchStartY===null) return;
+    const delta = touchStartY - e.touches[0].clientY;
+    if (!isRevealed) {
+      dragY = Math.max(0, delta);
+      wrapper.style.transform = `translateY(-${Math.min(dragY,LIFT_DISTANCE)}px)`;
+    } else {
+      dragY = Math.max(0, -delta);
+      wrapper.style.transform = `translateY(-${LIFT_DISTANCE - Math.min(dragY,LIFT_DISTANCE)}px)`;
+    }
+  }, {passive:true});
 
   wrapper.addEventListener('touchend', () => {
-    if (touchStartY === null) return;
+    if (touchStartY===null) return;
     touchStartY = null;
     if (!isRevealed) {
       if (dragY >= LIFT_THRESHOLD) revealDice();
-      else { wrapper.classList.add('snap-down'); wrapper.style.transform = 'translateY(0px)'; }
+      else { wrapper.classList.add('snap-down'); wrapper.style.transform='translateY(0px)'; }
+    } else {
+      if (dragY >= LIFT_THRESHOLD) hideDice();
+      else { wrapper.classList.add('snap-up'); wrapper.style.transform=`translateY(-${LIFT_DISTANCE}px)`; }
     }
     dragY = 0;
   });
 
-  // Mouse interaction (desktop)
-  let mouseStartY = null, mouseDragY = 0;
+  // Mouse
+  let mStartY = null, mDragY = 0;
   wrapper.addEventListener('mousedown', e => {
-    if (!hasRolled || isRevealed || isShaking) { if (!isShaking && !hasRolled) doShake(); return; }
-    mouseStartY = e.clientY; mouseDragY = 0;
+    if (isShaking) return;
+    if (!hasRolled) { doShake(); return; }
+    mStartY = e.clientY; mDragY = 0;
     wrapper.classList.remove('snap-up','snap-down');
     e.preventDefault();
   });
   document.addEventListener('mousemove', e => {
-    if (mouseStartY === null || isRevealed) return;
-    mouseDragY = Math.max(0, mouseStartY - e.clientY);
-    wrapper.style.transform = `translateY(-${Math.min(mouseDragY, LIFT_DISTANCE)}px)`;
+    if (mStartY===null) return;
+    const delta = mStartY - e.clientY;
+    if (!isRevealed) {
+      mDragY = Math.max(0, delta);
+      wrapper.style.transform = `translateY(-${Math.min(mDragY,LIFT_DISTANCE)}px)`;
+    } else {
+      mDragY = Math.max(0, -delta);
+      wrapper.style.transform = `translateY(-${LIFT_DISTANCE-Math.min(mDragY,LIFT_DISTANCE)}px)`;
+    }
   });
   document.addEventListener('mouseup', () => {
-    if (mouseStartY === null) return;
-    mouseStartY = null;
+    if (mStartY===null) return;
+    mStartY = null;
     if (!isRevealed) {
-      if (mouseDragY >= LIFT_THRESHOLD) revealDice();
-      else { wrapper.classList.add('snap-down'); wrapper.style.transform = 'translateY(0px)'; }
+      if (mDragY >= LIFT_THRESHOLD) revealDice();
+      else { wrapper.classList.add('snap-down'); wrapper.style.transform='translateY(0px)'; }
+    } else {
+      if (mDragY >= LIFT_THRESHOLD) hideDice();
+      else { wrapper.classList.add('snap-up'); wrapper.style.transform=`translateY(-${LIFT_DISTANCE}px)`; }
     }
-    mouseDragY = 0;
+    mDragY = 0;
   });
 
-  // Count selector
   document.getElementById('countBtns').addEventListener('click', e => {
     const btn = e.target.closest('.count-btn');
     if (!btn) return;
     diceCount = parseInt(btn.dataset.n);
-    document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.count-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     const w = document.getElementById('cupWrapper');
-    w.classList.remove('snap-up','snap-down');
-    w.style.transform = 'translateY(0px)';
-    document.getElementById('diceArea').innerHTML = '';
-    const s = document.getElementById('summary');
-    s.classList.add('hidden'); s.innerHTML = '摇完后查看你的底牌';
+    w.classList.remove('snap-up','snap-down'); w.style.transform='translateY(0px)';
+    document.getElementById('diceArea').innerHTML='';
+    const s=document.getElementById('summary');
+    s.classList.add('hidden'); s.innerHTML='摇完后查看你的底牌';
     document.getElementById('cupHint').classList.remove('hidden');
-    document.getElementById('revealHint').classList.remove('visible');
-    isRevealed = false; hasRolled = false; lastRoll = [];
+    document.getElementById('hintUp').classList.remove('visible');
+    document.getElementById('hintDown').classList.remove('visible');
+    isRevealed=false; hasRolled=false; lastRoll=[];
   });
 </script>
 </body>
