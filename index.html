@@ -27,6 +27,7 @@
       user-select: none;
     }
 
+    /* ── Layout ── */
     #app {
       display: flex;
       flex-direction: column;
@@ -36,6 +37,7 @@
       padding: 32px 20px 40px;
     }
 
+    /* ── Header ── */
     .header {
       text-align: center;
       width: 100%;
@@ -54,6 +56,7 @@
       letter-spacing: 1px;
     }
 
+    /* ── Dice count selector ── */
     .count-row {
       display: flex;
       align-items: center;
@@ -79,6 +82,7 @@
       box-shadow: 0 0 12px rgba(233,69,96,0.5);
     }
 
+    /* ── Cup (shake zone) ── */
     .cup-zone {
       display: flex;
       flex-direction: column;
@@ -135,6 +139,7 @@
     }
     .cup-hint.hidden { opacity: 0; }
 
+    /* ── Dice reveal ── */
     .dice-area {
       display: flex;
       flex-wrap: wrap;
@@ -175,8 +180,12 @@
       border-radius: 50%;
       background: #1a1a2e;
     }
+    /* Wild (1-pip) dot — red */
     .dot.wild { background: var(--accent); }
+    /* 4-pip dot — red */
+    .dot.red { background: var(--accent); }
 
+    /* ── Summary bar ── */
     .summary {
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.08);
@@ -207,6 +216,7 @@
       font-size: 13px;
     }
 
+    /* ── Shake button ── */
     .shake-btn {
       width: 100%;
       max-width: 280px;
@@ -240,6 +250,7 @@
     .shake-btn:active::before { left: 150%; }
     .shake-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    /* ── Animations ── */
     @keyframes shake {
       0%   { transform: rotate(0deg); }
       15%  { transform: rotate(-12deg) scale(1.05); }
@@ -263,6 +274,8 @@
       0%   { transform: scale(0); opacity: 0.4; }
       100% { transform: scale(4); opacity: 0; }
     }
+
+    /* Ripple effect on cup */
     .ripple {
       position: absolute;
       border-radius: 50%;
@@ -275,11 +288,13 @@
 </head>
 <body>
 <div id="app">
+  <!-- Header -->
   <div class="header">
     <h1>吹　牛</h1>
     <div class="subtitle">LIAR'S DICE · 骰盅摇骰</div>
   </div>
 
+  <!-- Dice count -->
   <div class="count-row">
     <span class="count-label">骰子数量</span>
     <div class="count-btns" id="countBtns">
@@ -291,6 +306,7 @@
     </div>
   </div>
 
+  <!-- Cup + Dice area -->
   <div class="cup-zone">
     <div class="cup-wrapper" id="cupWrapper" onclick="doShake()">
       <div class="cup" id="cup">🎲</div>
@@ -299,18 +315,24 @@
     <div class="dice-area" id="diceArea"></div>
   </div>
 
+  <!-- Summary -->
   <div class="summary" id="summary">
     摇完后查看你的底牌
   </div>
 
+  <!-- Shake button -->
   <button class="shake-btn" id="shakeBtn" onclick="doShake()">摇　一　摇</button>
 </div>
 
 <script>
+  // ── State ──
   let diceCount = 2;
   let isShaking = false;
   let lastRoll = [];
 
+  // ── Dice dot layouts ──
+  // Each face: array of grid-area names that should show dots
+  // Grid: a b / c e d / f g  (e = center)
   const LAYOUTS = {
     1: ['e'],
     2: ['a', 'g'],
@@ -321,79 +343,118 @@
   };
   const ALL_AREAS = ['a','b','c','d','e','f','g'];
 
+  // 1 is wild in 吹牛
   function renderDie(value, delayed) {
     const die = document.createElement('div');
     die.className = 'die';
+
     const activeDots = LAYOUTS[value];
     ALL_AREAS.forEach(area => {
       const dot = document.createElement('div');
       const isActive = activeDots.includes(area);
-      dot.className = isActive ? (value === 1 ? 'dot wild' : 'dot') : '';
+      if (isActive) {
+        dot.className = value === 1 ? 'dot wild' : value === 4 ? 'dot red' : 'dot';
+      } else {
+        dot.className = '';
+      }
       dot.style.gridArea = area;
       die.appendChild(dot);
     });
-    setTimeout(() => { die.classList.add('visible', 'rolling'); }, delayed);
+
+    setTimeout(() => {
+      die.classList.add('visible', 'rolling');
+    }, delayed);
+
     return die;
   }
 
   function buildSummary(rolls) {
+    // Count occurrences (1 = wild, counts for all)
     const counts = {};
     rolls.forEach(v => {
       if (v === 1) {
+        // wild adds to every face
         for (let i = 2; i <= 6; i++) counts[i] = (counts[i] || 0) + 1;
         counts[1] = (counts[1] || 0) + 1;
       } else {
         counts[v] = (counts[v] || 0) + 1;
       }
     });
+
+    // Build summary tags
+    const faceEmoji = ['','⭐','2','3','4','5','6'];
     const tags = [];
+
+    // Show wilds separately
     const wilds = rolls.filter(v => v === 1).length;
-    if (wilds > 0) tags.push(`<span class="count-tag">⭐ ×${wilds} 野</span>`);
+    if (wilds > 0) {
+      tags.push(`<span class="count-tag">⭐ ×${wilds} 野</span>`);
+    }
+
+    // Show non-wild faces with total (including wild contribution)
     for (let face = 2; face <= 6; face++) {
       const total = (counts[face] || 0);
       if (total > 0) {
-        const label = face===2?'二':face===3?'三':face===4?'四':face===5?'五':'六';
+        const label = face === 2 ? '二' : face === 3 ? '三' : face === 4 ? '四' : face === 5 ? '五' : '六';
         tags.push(`<span class="count-tag">${label} ×${total}</span>`);
       }
     }
+
     return tags.join(' ');
   }
 
+  // ── Shake ──
   function doShake() {
     if (isShaking) return;
     isShaking = true;
+
     const cup = document.getElementById('cup');
     const btn = document.getElementById('shakeBtn');
     const diceArea = document.getElementById('diceArea');
     const summary = document.getElementById('summary');
     const hint = document.getElementById('cupHint');
-    cup.classList.remove('shaking'); void cup.offsetWidth; cup.classList.add('shaking');
+
+    // Animate
+    cup.classList.remove('shaking');
+    void cup.offsetWidth; // reflow
+    cup.classList.add('shaking');
     btn.disabled = true;
+
+    // Hide previous dice
     diceArea.innerHTML = '';
     summary.innerHTML = '<span style="color:var(--dim);font-size:12px">摇中…</span>';
     hint.classList.add('hidden');
+
+    // Haptic
     if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
+
+    // Roll after cup animation
     setTimeout(() => {
       lastRoll = Array.from({ length: diceCount }, () => Math.ceil(Math.random() * 6));
+
       lastRoll.forEach((val, i) => {
         const die = renderDie(val, i * 80);
         diceArea.appendChild(die);
       });
+
       setTimeout(() => {
         summary.innerHTML = buildSummary(lastRoll);
         isShaking = false;
         btn.disabled = false;
         cup.classList.remove('shaking');
       }, diceCount * 80 + 200);
+
     }, 500);
   }
 
+  // ── Count selector ──
   document.getElementById('countBtns').addEventListener('click', (e) => {
     const btn = e.target.closest('.count-btn');
     if (!btn) return;
     diceCount = parseInt(btn.dataset.n);
     document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    // Reset
     document.getElementById('diceArea').innerHTML = '';
     document.getElementById('summary').innerHTML = '摇完后查看你的底牌';
     document.getElementById('cupHint').classList.remove('hidden');
