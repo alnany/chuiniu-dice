@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>吹牛 · 摇骰子</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --bg: #1a1a2e;
+      --surface: #16213e;
+      --card: #0f3460;
+      --accent: #e94560;
+      --gold: #f5a623;
+      --white: #ffffff;
+      --dim: rgba(255,255,255,0.5);
+      --radius: 16px;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bg);
+      font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
+      color: var(--white);
+      overflow: hidden;
+      user-select: none;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+      padding: 32px 20px 40px;
+    }
+
+    .header {
+      text-align: center;
+      width: 100%;
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: var(--gold);
+      text-shadow: 0 0 20px rgba(245,166,35,0.4);
+    }
+    .header .subtitle {
+      font-size: 13px;
+      color: var(--dim);
+      margin-top: 4px;
+      letter-spacing: 1px;
+    }
+
+    .count-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .count-label { font-size: 14px; color: var(--dim); }
+    .count-btns { display: flex; gap: 8px; }
+    .count-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.15);
+      background: transparent;
+      color: var(--white);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .count-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(233,69,96,0.5);
+    }
+
+    .cup-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      flex: 1;
+      width: 100%;
+    }
+
+    .cup-wrapper {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      cursor: pointer;
+    }
+
+    .cup {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #2a4a7f, var(--card));
+      box-shadow:
+        0 8px 32px rgba(0,0,0,0.4),
+        inset 0 2px 8px rgba(255,255,255,0.1),
+        0 0 0 2px rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 64px;
+      transition: transform 0.1s;
+      position: relative;
+      overflow: hidden;
+    }
+    .cup::after {
+      content: '';
+      position: absolute;
+      top: 12px; left: 20px;
+      width: 40px; height: 20px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+      transform: rotate(-30deg);
+    }
+    .cup.shaking {
+      animation: shake 0.5s cubic-bezier(0.36,0.07,0.19,0.97);
+    }
+    .cup:active { transform: scale(0.95); }
+
+    .cup-hint {
+      font-size: 13px;
+      color: var(--dim);
+      letter-spacing: 1px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .cup-hint.hidden { opacity: 0; }
+
+    .dice-area {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      min-height: 80px;
+      align-items: center;
+    }
+
+    .die {
+      width: 64px;
+      height: 64px;
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.8);
+      display: grid;
+      grid-template-areas:
+        "a . b"
+        "c e d"
+        "f . g";
+      padding: 8px;
+      gap: 3px;
+      opacity: 0;
+      transform: translateY(20px) scale(0.8);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .die.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    .die.rolling {
+      animation: dieRoll 0.4s ease-out;
+    }
+
+    .dot {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #1a1a2e;
+    }
+    .dot.wild { background: var(--accent); }
+
+    .summary {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-size: 13px;
+      color: var(--dim);
+      text-align: center;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      max-width: 320px;
+      flex-wrap: wrap;
+    }
+    .summary .count-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: rgba(245,166,35,0.15);
+      border: 1px solid rgba(245,166,35,0.3);
+      color: var(--gold);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .shake-btn {
+      width: 100%;
+      max-width: 280px;
+      height: 56px;
+      border-radius: 28px;
+      border: none;
+      background: linear-gradient(135deg, var(--accent), #c0392b);
+      color: var(--white);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      cursor: pointer;
+      box-shadow: 0 4px 24px rgba(233,69,96,0.4);
+      transition: transform 0.1s, box-shadow 0.1s;
+      position: relative;
+      overflow: hidden;
+    }
+    .shake-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      transition: left 0.4s;
+    }
+    .shake-btn:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 12px rgba(233,69,96,0.3);
+    }
+    .shake-btn:active::before { left: 150%; }
+    .shake-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    @keyframes shake {
+      0%   { transform: rotate(0deg); }
+      15%  { transform: rotate(-12deg) scale(1.05); }
+      30%  { transform: rotate(10deg) scale(0.98); }
+      45%  { transform: rotate(-8deg) scale(1.04); }
+      60%  { transform: rotate(6deg); }
+      75%  { transform: rotate(-4deg); }
+      90%  { transform: rotate(2deg); }
+      100% { transform: rotate(0deg); }
+    }
+    @keyframes dieRoll {
+      0%   { transform: rotate(-15deg) scale(0.85); opacity: 0.4; }
+      60%  { transform: rotate(5deg) scale(1.05); }
+      100% { transform: rotate(0deg) scale(1); opacity: 1; }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50%       { opacity: 1; }
+    }
+    @keyframes ripple {
+      0%   { transform: scale(0); opacity: 0.4; }
+      100% { transform: scale(4); opacity: 0; }
+    }
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      width: 80px; height: 80px;
+      background: rgba(233,69,96,0.3);
+      pointer-events: none;
+      animation: ripple 0.6s ease-out forwards;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <h1>吹　牛</h1>
+    <div class="subtitle">LIAR'S DICE · 骰盅摇骰</div>
+  </div>
+
+  <div class="count-row">
+    <span class="count-label">骰子数量</span>
+    <div class="count-btns" id="countBtns">
+      <button class="count-btn" data-n="1">1</button>
+      <button class="count-btn active" data-n="2">2</button>
+      <button class="count-btn" data-n="3">3</button>
+      <button class="count-btn" data-n="4">4</button>
+      <button class="count-btn" data-n="5">5</button>
+    </div>
+  </div>
+
+  <div class="cup-zone">
+    <div class="cup-wrapper" id="cupWrapper" onclick="doShake()">
+      <div class="cup" id="cup">🎲</div>
+    </div>
+    <div class="cup-hint" id="cupHint">点击骰盅摇一摇</div>
+    <div class="dice-area" id="diceArea"></div>
+  </div>
+
+  <div class="summary" id="summary">
+    摇完后查看你的底牌
+  </div>
+
+  <button class="shake-btn" id="shakeBtn" onclick="doShake()">摇　一　摇</button>
+</div>
+
+<script>
+  let diceCount = 2;
+  let isShaking = false;
+  let lastRoll = [];
+
+  const LAYOUTS = {
+    1: ['e'],
+    2: ['a', 'g'],
+    3: ['a', 'e', 'g'],
+    4: ['a', 'b', 'f', 'g'],
+    5: ['a', 'b', 'e', 'f', 'g'],
+    6: ['a', 'b', 'c', 'd', 'f', 'g'],
+  };
+  const ALL_AREAS = ['a','b','c','d','e','f','g'];
+
+  function renderDie(value, delayed) {
+    const die = document.createElement('div');
+    die.className = 'die';
+    const activeDots = LAYOUTS[value];
+    ALL_AREAS.forEach(area => {
+      const dot = document.createElement('div');
+      const isActive = activeDots.includes(area);
+      dot.className = isActive ? (value === 1 ? 'dot wild' : 'dot') : '';
+      dot.style.gridArea = area;
+      die.appendChild(dot);
+    });
+    setTimeout(() => { die.classList.add('visible', 'rolling'); }, delayed);
+    return die;
+  }
+
+  function buildSummary(rolls) {
+    const counts = {};
+    rolls.forEach(v => {
+      if (v === 1) {
+        for (let i = 2; i <= 6; i++) counts[i] = (counts[i] || 0) + 1;
+        counts[1] = (counts[1] || 0) + 1;
+      } else {
+        counts[v] = (counts[v] || 0) + 1;
+      }
+    });
+    const tags = [];
+    const wilds = rolls.filter(v => v === 1).length;
+    if (wilds > 0) tags.push(`<span class="count-tag">⭐ ×${wilds} 野</span>`);
+    for (let face = 2; face <= 6; face++) {
+      const total = (counts[face] || 0);
+      if (total > 0) {
+        const label = face===2?'二':face===3?'三':face===4?'四':face===5?'五':'六';
+        tags.push(`<span class="count-tag">${label} ×${total}</span>`);
+      }
+    }
+    return tags.join(' ');
+  }
+
+  function doShake() {
+    if (isShaking) return;
+    isShaking = true;
+    const cup = document.getElementById('cup');
+    const btn = document.getElementById('shakeBtn');
+    const diceArea = document.getElementById('diceArea');
+    const summary = document.getElementById('summary');
+    const hint = document.getElementById('cupHint');
+    cup.classList.remove('shaking'); void cup.offsetWidth; cup.classList.add('shaking');
+    btn.disabled = true;
+    diceArea.innerHTML = '';
+    summary.innerHTML = '<span style="color:var(--dim);font-size:12px">摇中…</span>';
+    hint.classList.add('hidden');
+    if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
+    setTimeout(() => {
+      lastRoll = Array.from({ length: diceCount }, () => Math.ceil(Math.random() * 6));
+      lastRoll.forEach((val, i) => {
+        const die = renderDie(val, i * 80);
+        diceArea.appendChild(die);
+      });
+      setTimeout(() => {
+        summary.innerHTML = buildSummary(lastRoll);
+        isShaking = false;
+        btn.disabled = false;
+        cup.classList.remove('shaking');
+      }, diceCount * 80 + 200);
+    }, 500);
+  }
+
+  document.getElementById('countBtns').addEventListener('click', (e) => {
+    const btn = e.target.closest('.count-btn');
+    if (!btn) return;
+    diceCount = parseInt(btn.dataset.n);
+    document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('diceArea').innerHTML = '';
+    document.getElementById('summary').innerHTML = '摇完后查看你的底牌';
+    document.getElementById('cupHint').classList.remove('hidden');
+    lastRoll = [];
+  });
+</script>
+</body>
+</html>
