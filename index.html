@@ -56,19 +56,17 @@
       box-shadow: 0 0 12px rgba(233,69,96,0.5);
     }
 
-    /* Cup zone */
+    /* Cup zone — all children are absolute so this has zero intrinsic height impact */
     .cup-zone {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 20px; flex: 1; width: 100%; position: relative;
+      flex: 1; width: 100%; position: relative;
     }
 
-    /* Dice area — pushed to lower half so cup clears them when lifted */
+    /* Dice area — absolute at bottom, never pushes layout */
     .dice-area {
+      position: absolute; bottom: 10px; left: 0; right: 0;
       display: flex; flex-wrap: wrap; gap: 12px;
       justify-content: center; min-height: 80px;
-      align-items: center; position: relative; z-index: 1;
-      margin-top: 220px;
+      align-items: center; z-index: 1;
     }
 
     .die {
@@ -150,11 +148,13 @@
     .reveal-hint.visible { opacity: 1; animation: bounceDir 1.2s ease-in-out infinite; }
     .reveal-hint .arrow { font-size: 18px; }
 
+    /* Tap hint — absolute so it doesn't affect layout height */
     .cup-hint {
       font-size: 13px; color: var(--dim); letter-spacing: 1px;
       animation: pulse 2s ease-in-out infinite;
-      position: relative; z-index: 5;
-      margin-top: 220px; transition: opacity 0.3s;
+      position: absolute; bottom: 50px; left: 50%;
+      transform: translateX(-50%); white-space: nowrap;
+      z-index: 5; transition: opacity 0.3s;
     }
     .cup-hint.hidden { opacity: 0; pointer-events: none; }
 
@@ -300,6 +300,7 @@
     const cupBody = document.getElementById('cupBody');
     const btn     = document.getElementById('shakeBtn');
     const wrapper = document.getElementById('cupWrapper');
+    const da      = document.getElementById('diceArea');
 
     wrapper.classList.remove('snap-up','snap-down');
     wrapper.style.transform = 'translateY(0px)';
@@ -307,8 +308,6 @@
     document.getElementById('hintDown').classList.remove('visible');
     document.getElementById('cupHint').classList.add('hidden');
     document.getElementById('summary').classList.add('hidden');
-
-    const da = document.getElementById('diceArea');
     Array.from(da.children).forEach(d => d.classList.remove('visible'));
 
     cupBody.classList.remove('shaking');
