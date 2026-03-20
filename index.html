@@ -63,11 +63,12 @@
       gap: 20px; flex: 1; width: 100%; position: relative;
     }
 
-    /* Dice area — under cup */
+    /* Dice area — pushed to lower half so cup clears them when lifted */
     .dice-area {
       display: flex; flex-wrap: wrap; gap: 12px;
       justify-content: center; min-height: 80px;
       align-items: center; position: relative; z-index: 1;
+      margin-top: 220px;
     }
 
     .die {
@@ -89,6 +90,7 @@
     /* ── CSS Dice Cup ── */
     .cup-wrapper {
       position: absolute;
+      top: 10px; left: 50%; margin-left: -80px;
       width: 160px; height: 200px;
       cursor: grab; z-index: 10; touch-action: none;
       transform: translateY(0px); transition: transform 0s;
@@ -152,7 +154,7 @@
       font-size: 13px; color: var(--dim); letter-spacing: 1px;
       animation: pulse 2s ease-in-out infinite;
       position: relative; z-index: 5;
-      margin-top: 120px; transition: opacity 0.3s;
+      margin-top: 220px; transition: opacity 0.3s;
     }
     .cup-hint.hidden { opacity: 0; pointer-events: none; }
 
@@ -363,7 +365,6 @@
     }, 150);
   }
 
-  // Touch
   const wrapper = document.getElementById('cupWrapper');
   let touchStartY = null, dragY = 0;
 
@@ -399,7 +400,6 @@
     dragY = 0;
   });
 
-  // Mouse
   let mStartY = null, mDragY = 0;
   wrapper.addEventListener('mousedown', e => {
     if (isShaking) return;
