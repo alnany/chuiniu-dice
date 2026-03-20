@@ -27,7 +27,6 @@
       user-select: none;
     }
 
-    /* ── Layout ── */
     #app {
       display: flex;
       flex-direction: column;
@@ -37,220 +36,138 @@
       padding: 32px 20px 40px;
     }
 
-    /* ── Header ── */
-    .header {
-      text-align: center;
-      width: 100%;
-    }
+    .header { text-align: center; width: 100%; }
     .header h1 {
-      font-size: 28px;
-      font-weight: 700;
-      letter-spacing: 4px;
-      color: var(--gold);
-      text-shadow: 0 0 20px rgba(245,166,35,0.4);
+      font-size: 28px; font-weight: 700; letter-spacing: 4px;
+      color: var(--gold); text-shadow: 0 0 20px rgba(245,166,35,0.4);
     }
-    .header .subtitle {
-      font-size: 13px;
-      color: var(--dim);
-      margin-top: 4px;
-      letter-spacing: 1px;
-    }
+    .header .subtitle { font-size: 13px; color: var(--dim); margin-top: 4px; letter-spacing: 1px; }
 
-    /* ── Dice count selector ── */
-    .count-row {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
+    .count-row { display: flex; align-items: center; gap: 16px; }
     .count-label { font-size: 14px; color: var(--dim); }
     .count-btns { display: flex; gap: 8px; }
     .count-btn {
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.15);
-      background: transparent;
-      color: var(--white);
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.15); background: transparent;
+      color: var(--white); font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
       display: flex; align-items: center; justify-content: center;
     }
     .count-btn.active {
-      background: var(--accent);
-      border-color: var(--accent);
+      background: var(--accent); border-color: var(--accent);
       box-shadow: 0 0 12px rgba(233,69,96,0.5);
     }
 
-    /* ── Cup (shake zone) ── */
+    /* Cup zone: dice sit underneath, cup overlays on top */
     .cup-zone {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-      flex: 1;
-      width: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 20px; flex: 1; width: 100%; position: relative;
     }
 
-    .cup-wrapper {
-      position: relative;
-      width: 180px;
-      height: 180px;
-      cursor: pointer;
-    }
-
-    .cup {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #2a4a7f, var(--card));
-      box-shadow:
-        0 8px 32px rgba(0,0,0,0.4),
-        inset 0 2px 8px rgba(255,255,255,0.1),
-        0 0 0 2px rgba(255,255,255,0.06);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 64px;
-      transition: transform 0.1s;
-      position: relative;
-      overflow: hidden;
-    }
-    .cup::after {
-      content: '';
-      position: absolute;
-      top: 12px; left: 20px;
-      width: 40px; height: 20px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 50%;
-      transform: rotate(-30deg);
-    }
-    .cup.shaking {
-      animation: shake 0.5s cubic-bezier(0.36,0.07,0.19,0.97);
-    }
-    .cup:active { transform: scale(0.95); }
-
-    .cup-hint {
-      font-size: 13px;
-      color: var(--dim);
-      letter-spacing: 1px;
-      animation: pulse 2s ease-in-out infinite;
-    }
-    .cup-hint.hidden { opacity: 0; }
-
-    /* ── Dice reveal ── */
+    /* Dice area — always in DOM, made visible on reveal */
     .dice-area {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: center;
-      min-height: 80px;
-      align-items: center;
+      display: flex; flex-wrap: wrap; gap: 12px;
+      justify-content: center; min-height: 80px;
+      align-items: center; position: relative; z-index: 1;
     }
 
     .die {
-      width: 64px;
-      height: 64px;
-      background: var(--white);
+      width: 64px; height: 64px; background: var(--white);
       border-radius: 12px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.8);
       display: grid;
-      grid-template-areas:
-        "a . b"
-        "c e d"
-        "f . g";
-      padding: 8px;
-      gap: 3px;
+      grid-template-areas: "a . b" "c e d" "f . g";
+      padding: 8px; gap: 3px;
       opacity: 0;
-      transform: translateY(20px) scale(0.8);
-      transition: opacity 0.3s, transform 0.3s;
+      transform: translateY(6px) scale(0.92);
+      transition: opacity 0.35s ease, transform 0.35s ease;
     }
-    .die.visible {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-    .die.rolling {
-      animation: dieRoll 0.4s ease-out;
-    }
+    .die.visible { opacity: 1; transform: translateY(0) scale(1); }
 
-    .dot {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: #1a1a2e;
-    }
-    /* Wild (1-pip) dot — red */
+    .dot { width: 100%; height: 100%; border-radius: 50%; background: #1a1a2e; }
     .dot.wild { background: var(--accent); }
-    /* 4-pip dot — red */
-    .dot.red { background: var(--accent); }
+    .dot.red  { background: var(--accent); }
 
-    /* ── Summary bar ── */
+    /* Cup wrapper — overlays dice, draggable upward */
+    .cup-wrapper {
+      position: absolute;
+      width: 180px; height: 180px;
+      cursor: grab; z-index: 10; touch-action: none;
+      transform: translateY(0px); transition: transform 0s;
+    }
+    .cup-wrapper.snap-up   { transition: transform 0.32s cubic-bezier(0.22,1,0.36,1); }
+    .cup-wrapper.snap-down { transition: transform 0.28s cubic-bezier(0.55,0,1,0.45); }
+
+    .cup {
+      width: 100%; height: 100%; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #2a4a7f, var(--card));
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 2px 8px rgba(255,255,255,0.1), 0 0 0 2px rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 64px; position: relative; overflow: hidden;
+    }
+    .cup::after {
+      content: ''; position: absolute; top: 12px; left: 20px;
+      width: 40px; height: 20px; background: rgba(255,255,255,0.08);
+      border-radius: 50%; transform: rotate(-30deg);
+    }
+    .cup.shaking { animation: shake 0.5s cubic-bezier(0.36,0.07,0.19,0.97); }
+
+    /* Hint below cup — default and post-roll */
+    .cup-hint {
+      font-size: 13px; color: var(--dim); letter-spacing: 1px;
+      animation: pulse 2s ease-in-out infinite;
+      position: relative; z-index: 5;
+      margin-top: 100px;
+      transition: opacity 0.3s;
+    }
+    .cup-hint.hidden { opacity: 0; pointer-events: none; }
+
+    /* Swipe-up hint on cup after rolling */
+    .reveal-hint {
+      position: absolute; bottom: -40px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 13px; color: var(--gold); letter-spacing: 1px;
+      opacity: 0; pointer-events: none; white-space: nowrap;
+      transition: opacity 0.3s;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .reveal-hint.visible { opacity: 1; animation: bounceUp 1.2s ease-in-out infinite; }
+    .reveal-hint .arrow { font-size: 20px; }
+
     .summary {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
-      padding: 12px 24px;
-      font-size: 13px;
-      color: var(--dim);
-      text-align: center;
-      min-height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      width: 100%;
-      max-width: 320px;
-      flex-wrap: wrap;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 12px 24px; font-size: 13px; color: var(--dim);
+      text-align: center; min-height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; width: 100%; max-width: 320px; flex-wrap: wrap;
+      transition: opacity 0.3s;
     }
+    .summary.hidden { opacity: 0; }
     .summary .count-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 3px 10px;
-      border-radius: 20px;
-      background: rgba(245,166,35,0.15);
-      border: 1px solid rgba(245,166,35,0.3);
-      color: var(--gold);
-      font-weight: 600;
-      font-size: 13px;
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px;
+      background: rgba(245,166,35,0.15); border: 1px solid rgba(245,166,35,0.3);
+      color: var(--gold); font-weight: 600; font-size: 13px;
     }
 
-    /* ── Shake button ── */
     .shake-btn {
-      width: 100%;
-      max-width: 280px;
-      height: 56px;
-      border-radius: 28px;
-      border: none;
-      background: linear-gradient(135deg, var(--accent), #c0392b);
-      color: var(--white);
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: 3px;
-      cursor: pointer;
-      box-shadow: 0 4px 24px rgba(233,69,96,0.4);
-      transition: transform 0.1s, box-shadow 0.1s;
-      position: relative;
-      overflow: hidden;
+      width: 100%; max-width: 280px; height: 56px; border-radius: 28px;
+      border: none; background: linear-gradient(135deg, var(--accent), #c0392b);
+      color: var(--white); font-size: 18px; font-weight: 700; letter-spacing: 3px;
+      cursor: pointer; box-shadow: 0 4px 24px rgba(233,69,96,0.4);
+      transition: transform 0.1s, box-shadow 0.1s; position: relative; overflow: hidden;
     }
     .shake-btn::before {
-      content: '';
-      position: absolute;
-      top: 0; left: -100%;
-      width: 60%;
-      height: 100%;
+      content: ''; position: absolute; top: 0; left: -100%;
+      width: 60%; height: 100%;
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
       transition: left 0.4s;
     }
-    .shake-btn:active {
-      transform: scale(0.97);
-      box-shadow: 0 2px 12px rgba(233,69,96,0.3);
-    }
+    .shake-btn:active { transform: scale(0.97); box-shadow: 0 2px 12px rgba(233,69,96,0.3); }
     .shake-btn:active::before { left: 150%; }
     .shake-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* ── Animations ── */
     @keyframes shake {
       0%   { transform: rotate(0deg); }
       15%  { transform: rotate(-12deg) scale(1.05); }
@@ -261,40 +178,29 @@
       90%  { transform: rotate(2deg); }
       100% { transform: rotate(0deg); }
     }
-    @keyframes dieRoll {
-      0%   { transform: rotate(-15deg) scale(0.85); opacity: 0.4; }
-      60%  { transform: rotate(5deg) scale(1.05); }
-      100% { transform: rotate(0deg) scale(1); opacity: 1; }
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 0.5; }
-      50%       { opacity: 1; }
+    @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+    @keyframes bounceUp {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50%       { transform: translateX(-50%) translateY(-6px); }
     }
     @keyframes ripple {
       0%   { transform: scale(0); opacity: 0.4; }
       100% { transform: scale(4); opacity: 0; }
     }
-
-    /* Ripple effect on cup */
     .ripple {
-      position: absolute;
-      border-radius: 50%;
-      width: 80px; height: 80px;
-      background: rgba(233,69,96,0.3);
-      pointer-events: none;
+      position: absolute; border-radius: 50%; width: 80px; height: 80px;
+      background: rgba(233,69,96,0.3); pointer-events: none;
       animation: ripple 0.6s ease-out forwards;
     }
   </style>
 </head>
 <body>
 <div id="app">
-  <!-- Header -->
   <div class="header">
     <h1>吹　牛</h1>
     <div class="subtitle">LIAR'S DICE · 骰盅摇骰</div>
   </div>
 
-  <!-- Dice count -->
   <div class="count-row">
     <span class="count-label">骰子数量</span>
     <div class="count-btns" id="countBtns">
@@ -306,159 +212,214 @@
     </div>
   </div>
 
-  <!-- Cup + Dice area -->
-  <div class="cup-zone">
-    <div class="cup-wrapper" id="cupWrapper" onclick="doShake()">
-      <div class="cup" id="cup">🎲</div>
-    </div>
-    <div class="cup-hint" id="cupHint">点击骰盅摇一摇</div>
+  <div class="cup-zone" id="cupZone">
+    <!-- Dice rendered here, hidden under the cup until revealed -->
     <div class="dice-area" id="diceArea"></div>
+
+    <!-- Cup sits on top, swipe/drag upward to reveal -->
+    <div class="cup-wrapper" id="cupWrapper">
+      <div class="cup" id="cup">🎲</div>
+      <div class="reveal-hint" id="revealHint">
+        <span class="arrow">↑</span>
+        <span>上滑查看</span>
+      </div>
+    </div>
+
+    <div class="cup-hint" id="cupHint">点击骰盅摇一摇</div>
   </div>
 
-  <!-- Summary -->
-  <div class="summary" id="summary">
-    摇完后查看你的底牌
-  </div>
+  <div class="summary hidden" id="summary">摇完后查看你的底牌</div>
 
-  <!-- Shake button -->
   <button class="shake-btn" id="shakeBtn" onclick="doShake()">摇　一　摇</button>
 </div>
 
 <script>
-  // ── State ──
   let diceCount = 2;
   let isShaking = false;
+  let isRevealed = false;
+  let hasRolled = false;
   let lastRoll = [];
 
-  // ── Dice dot layouts ──
-  // Each face: array of grid-area names that should show dots
-  // Grid: a b / c e d / f g  (e = center)
   const LAYOUTS = {
-    1: ['e'],
-    2: ['a', 'g'],
-    3: ['a', 'e', 'g'],
-    4: ['a', 'b', 'f', 'g'],
-    5: ['a', 'b', 'e', 'f', 'g'],
-    6: ['a', 'b', 'c', 'd', 'f', 'g'],
+    1: ['e'], 2: ['a','g'], 3: ['a','e','g'],
+    4: ['a','b','f','g'], 5: ['a','b','e','f','g'],
+    6: ['a','b','c','d','f','g'],
   };
   const ALL_AREAS = ['a','b','c','d','e','f','g'];
 
-  // 1 is wild in 吹牛
-  function renderDie(value, delayed) {
+  function renderDie(value) {
     const die = document.createElement('div');
     die.className = 'die';
-
-    const activeDots = LAYOUTS[value];
-    ALL_AREAS.forEach(area => {
+    LAYOUTS[value].forEach(area => {
       const dot = document.createElement('div');
-      const isActive = activeDots.includes(area);
-      if (isActive) {
-        dot.className = value === 1 ? 'dot wild' : value === 4 ? 'dot red' : 'dot';
-      } else {
-        dot.className = '';
-      }
+      dot.className = value === 1 ? 'dot wild' : value === 4 ? 'dot red' : 'dot';
       dot.style.gridArea = area;
       die.appendChild(dot);
     });
-
-    setTimeout(() => {
-      die.classList.add('visible', 'rolling');
-    }, delayed);
-
+    ALL_AREAS.filter(a => !LAYOUTS[value].includes(a)).forEach(area => {
+      const blank = document.createElement('div');
+      blank.style.gridArea = area;
+      die.appendChild(blank);
+    });
     return die;
   }
 
   function buildSummary(rolls) {
-    // Count occurrences (1 = wild, counts for all)
     const counts = {};
     rolls.forEach(v => {
       if (v === 1) {
-        // wild adds to every face
-        for (let i = 2; i <= 6; i++) counts[i] = (counts[i] || 0) + 1;
-        counts[1] = (counts[1] || 0) + 1;
-      } else {
-        counts[v] = (counts[v] || 0) + 1;
-      }
+        for (let i = 2; i <= 6; i++) counts[i] = (counts[i]||0) + 1;
+        counts[1] = (counts[1]||0) + 1;
+      } else { counts[v] = (counts[v]||0) + 1; }
     });
-
-    // Build summary tags
-    const faceEmoji = ['','⭐','2','3','4','5','6'];
     const tags = [];
-
-    // Show wilds separately
-    const wilds = rolls.filter(v => v === 1).length;
-    if (wilds > 0) {
-      tags.push(`<span class="count-tag">⭐ ×${wilds} 野</span>`);
-    }
-
-    // Show non-wild faces with total (including wild contribution)
-    for (let face = 2; face <= 6; face++) {
-      const total = (counts[face] || 0);
-      if (total > 0) {
-        const label = face === 2 ? '二' : face === 3 ? '三' : face === 4 ? '四' : face === 5 ? '五' : '六';
-        tags.push(`<span class="count-tag">${label} ×${total}</span>`);
+    const wilds = rolls.filter(v => v===1).length;
+    if (wilds > 0) tags.push(`<span class="count-tag">⭐ ×${wilds} 野</span>`);
+    for (let f = 2; f <= 6; f++) {
+      if (counts[f]) {
+        const lbl = ['','','二','三','四','五','六'][f];
+        tags.push(`<span class="count-tag">${lbl} ×${counts[f]}</span>`);
       }
     }
-
     return tags.join(' ');
   }
 
-  // ── Shake ──
   function doShake() {
     if (isShaking) return;
-    isShaking = true;
+    isShaking = true; isRevealed = false; hasRolled = false;
 
     const cup = document.getElementById('cup');
     const btn = document.getElementById('shakeBtn');
     const diceArea = document.getElementById('diceArea');
     const summary = document.getElementById('summary');
     const hint = document.getElementById('cupHint');
+    const revHint = document.getElementById('revealHint');
+    const wrapper = document.getElementById('cupWrapper');
 
-    // Animate
+    // Reset cup to starting position
+    wrapper.classList.remove('snap-up','snap-down');
+    wrapper.style.transform = 'translateY(0px)';
+
+    diceArea.innerHTML = '';
+    summary.classList.add('hidden');
+    revHint.classList.remove('visible');
+    hint.classList.add('hidden');
+
     cup.classList.remove('shaking');
-    void cup.offsetWidth; // reflow
+    void cup.offsetWidth;
     cup.classList.add('shaking');
     btn.disabled = true;
 
-    // Hide previous dice
-    diceArea.innerHTML = '';
-    summary.innerHTML = '<span style="color:var(--dim);font-size:12px">摇中…</span>';
-    hint.classList.add('hidden');
+    if (navigator.vibrate) navigator.vibrate([60,30,60]);
 
-    // Haptic
-    if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
-
-    // Roll after cup animation
     setTimeout(() => {
-      lastRoll = Array.from({ length: diceCount }, () => Math.ceil(Math.random() * 6));
-
-      lastRoll.forEach((val, i) => {
-        const die = renderDie(val, i * 80);
-        diceArea.appendChild(die);
-      });
+      lastRoll = Array.from({length: diceCount}, () => Math.ceil(Math.random()*6));
+      lastRoll.forEach(val => diceArea.appendChild(renderDie(val)));
 
       setTimeout(() => {
-        summary.innerHTML = buildSummary(lastRoll);
-        isShaking = false;
-        btn.disabled = false;
         cup.classList.remove('shaking');
-      }, diceCount * 80 + 200);
-
+        isShaking = false; hasRolled = true;
+        btn.disabled = false;
+        revHint.classList.add('visible');
+        if (navigator.vibrate) navigator.vibrate(40);
+      }, 300);
     }, 500);
   }
 
-  // ── Count selector ──
-  document.getElementById('countBtns').addEventListener('click', (e) => {
+  const LIFT_THRESHOLD = 60;
+  const LIFT_DISTANCE  = 240;
+
+  function revealDice() {
+    if (isRevealed) return;
+    isRevealed = true;
+    const wrapper = document.getElementById('cupWrapper');
+    const diceArea = document.getElementById('diceArea');
+    const summary = document.getElementById('summary');
+    const revHint = document.getElementById('revealHint');
+
+    wrapper.classList.add('snap-up');
+    wrapper.style.transform = `translateY(-${LIFT_DISTANCE}px)`;
+    revHint.classList.remove('visible');
+
+    Array.from(diceArea.children).forEach((die, i) => {
+      setTimeout(() => die.classList.add('visible'), i * 80);
+    });
+    setTimeout(() => {
+      summary.innerHTML = buildSummary(lastRoll);
+      summary.classList.remove('hidden');
+    }, lastRoll.length * 80 + 100);
+
+    if (navigator.vibrate) navigator.vibrate([30,20,60]);
+  }
+
+  // Touch interaction
+  const wrapper = document.getElementById('cupWrapper');
+  let touchStartY = null, dragY = 0;
+
+  wrapper.addEventListener('touchstart', e => {
+    if (!hasRolled || isRevealed || isShaking) {
+      if (!isShaking && !hasRolled) doShake();
+      return;
+    }
+    touchStartY = e.touches[0].clientY; dragY = 0;
+    wrapper.classList.remove('snap-up','snap-down');
+  }, {passive: true});
+
+  wrapper.addEventListener('touchmove', e => {
+    if (touchStartY === null || isRevealed) return;
+    dragY = Math.max(0, touchStartY - e.touches[0].clientY);
+    wrapper.style.transform = `translateY(-${Math.min(dragY, LIFT_DISTANCE)}px)`;
+  }, {passive: true});
+
+  wrapper.addEventListener('touchend', () => {
+    if (touchStartY === null) return;
+    touchStartY = null;
+    if (!isRevealed) {
+      if (dragY >= LIFT_THRESHOLD) revealDice();
+      else { wrapper.classList.add('snap-down'); wrapper.style.transform = 'translateY(0px)'; }
+    }
+    dragY = 0;
+  });
+
+  // Mouse interaction (desktop)
+  let mouseStartY = null, mouseDragY = 0;
+  wrapper.addEventListener('mousedown', e => {
+    if (!hasRolled || isRevealed || isShaking) { if (!isShaking && !hasRolled) doShake(); return; }
+    mouseStartY = e.clientY; mouseDragY = 0;
+    wrapper.classList.remove('snap-up','snap-down');
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (mouseStartY === null || isRevealed) return;
+    mouseDragY = Math.max(0, mouseStartY - e.clientY);
+    wrapper.style.transform = `translateY(-${Math.min(mouseDragY, LIFT_DISTANCE)}px)`;
+  });
+  document.addEventListener('mouseup', () => {
+    if (mouseStartY === null) return;
+    mouseStartY = null;
+    if (!isRevealed) {
+      if (mouseDragY >= LIFT_THRESHOLD) revealDice();
+      else { wrapper.classList.add('snap-down'); wrapper.style.transform = 'translateY(0px)'; }
+    }
+    mouseDragY = 0;
+  });
+
+  // Count selector
+  document.getElementById('countBtns').addEventListener('click', e => {
     const btn = e.target.closest('.count-btn');
     if (!btn) return;
     diceCount = parseInt(btn.dataset.n);
     document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    // Reset
+    const w = document.getElementById('cupWrapper');
+    w.classList.remove('snap-up','snap-down');
+    w.style.transform = 'translateY(0px)';
     document.getElementById('diceArea').innerHTML = '';
-    document.getElementById('summary').innerHTML = '摇完后查看你的底牌';
+    const s = document.getElementById('summary');
+    s.classList.add('hidden'); s.innerHTML = '摇完后查看你的底牌';
     document.getElementById('cupHint').classList.remove('hidden');
-    lastRoll = [];
+    document.getElementById('revealHint').classList.remove('visible');
+    isRevealed = false; hasRolled = false; lastRoll = [];
   });
 </script>
 </body>
